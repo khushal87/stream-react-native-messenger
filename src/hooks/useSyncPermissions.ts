@@ -1,33 +1,32 @@
-import {useEffect, useRef} from 'react';
-import {AppState} from 'react-native';
-import {requestAndUpdatePermissions} from '../utils/requestAndUpdatePermissions';
-import {checkAndUpdatePermissions} from '../utils/checkAndUpdatePermissions';
+import {useEffect} from 'react';
+import {Platform} from 'react-native';
+import {
+  PERMISSIONS,
+  requestMultiple,
+  requestNotifications,
+} from 'react-native-permissions';
 
+/**
+ * This hook is used to sync the permissions of the app with the Stream Video SDK.
+ * We will ask for relevant permissions after the parent screen is mounted and when app state changes
+ * to foreground. This ensures the latest permissions are synced with the Stream Video SDK
+ * so the SDK will subscribe to audio/video devices as preparation for a call.
+ */
 export const useSyncPermissions = () => {
-  // request permissions on mount
   useEffect(() => {
-    const requestAndUpdate = async () => {
-      await requestAndUpdatePermissions();
-    };
-    requestAndUpdate();
+    requestAndUpdatePermissions();
   }, []);
+};
 
-  // check permissions on foreground
-  const appStateRef = useRef(AppState.currentState);
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (
-        appStateRef.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        checkAndUpdatePermissions();
-      }
-
-      appStateRef.current = nextAppState;
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
+const requestAndUpdatePermissions = async () => {
+  if (Platform.OS === 'ios') {
+    await requestMultiple([PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE]);
+  } else if (Platform.OS === 'android') {
+    await requestMultiple([
+      PERMISSIONS.ANDROID.CAMERA,
+      PERMISSIONS.ANDROID.RECORD_AUDIO,
+      PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+    ]);
+  }
+  await requestNotifications(['alert', 'sound']);
 };

@@ -13,6 +13,7 @@ import {MessengerWrapper} from './src/components/MessengerWrapper';
 import {ChannelHeaderComponent} from './src/components/ChannelHeaderComponent';
 import {AppProvider, useAppContext} from './src/context/AppContext';
 import {useSyncPermissions} from './src/hooks/useSyncPermissions';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator<NavigationStackParamsList>();
 
@@ -53,11 +54,13 @@ const App = () => {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <NavigationContainer>
-        <AppProvider>
-          <Messenger />
-        </AppProvider>
-      </NavigationContainer>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <AppProvider>
+            <Messenger />
+          </AppProvider>
+        </NavigationContainer>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 };
